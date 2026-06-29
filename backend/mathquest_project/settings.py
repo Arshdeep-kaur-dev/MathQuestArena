@@ -18,6 +18,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '.onrender.com',
     '.vercel.app',
+    'mathquestarena.onrender.com',
 ]
 
 INSTALLED_APPS = [
