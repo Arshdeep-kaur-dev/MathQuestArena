@@ -116,54 +116,6 @@ Team MathQuest Arena''',
     except Exception as e:
         print(f"Register error: {str(e)}")
         return Response({'error': 'Registration failed!'}, status=500)
-    try:
-        username = request.data.get('username')
-        email = request.data.get('email')
-        password = request.data.get('password')
-
-        if not username or not email or not password:
-            return Response({'error': 'All fields required!'}, status=400)
-
-        if User.objects.filter(username=username).exists():
-            return Response({'error': 'Username already exists!'}, status=400)
-
-        if User.objects.filter(email=email).exists():
-            return Response({'error': 'Email already registered!'}, status=400)
-
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-        )
-        user.is_active = False
-        user.save()
-
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        token = account_activation_token.make_token(user)
-        activation_link = f"http://localhost:5173/verify-email/{uid}/{token}"
-
-        send_mail(
-            subject='Verify your MathQuest Arena Account',
-            message=f'''Hello {username}!
-
-Welcome to MathQuest Arena! 🎮
-
-Click here to verify your email:
-{activation_link}
-
-Team MathQuest Arena''',
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[email],
-            fail_silently=False,
-        )
-
-        return Response({
-            'message': 'Registration successful! Please check your email to verify your account.'
-        }, status=201)
-
-    except Exception as e:
-        print(f"Register error: {str(e)}")
-        return Response({'error': 'Registration failed!'}, status=500)
 
 
 
