@@ -1,1 +1,1 @@
-web: gunicorn mathquest_project.wsgi:application
+web: gunicorn mathquest_project.wsgi:application --timeout 30
