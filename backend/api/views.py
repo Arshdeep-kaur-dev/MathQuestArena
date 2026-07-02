@@ -104,7 +104,7 @@ Click here to verify your email:
 Team MathQuest Arena''',
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[email],
-                fail_silently=True,
+                fail_silently=False,
             )
         except Exception as e:
             print(f"Email send error: {str(e)}")
