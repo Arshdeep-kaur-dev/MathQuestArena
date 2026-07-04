@@ -84,7 +84,7 @@ def register(request):
             email=email,
             password=password,
         )
-        user.is_active = False
+        user.is_active = True
         user.save()
 
         uid = urlsafe_base64_encode(force_bytes(user.pk))
