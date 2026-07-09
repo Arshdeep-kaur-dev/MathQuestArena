@@ -4,3 +4,4 @@ class EmailVerificationTokenGenerator(PasswordResetTokenGenerator):
     pass
 
 account_activation_token = EmailVerificationTokenGenerator()
+

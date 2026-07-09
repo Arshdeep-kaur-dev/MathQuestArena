@@ -1,6 +1,4 @@
 import os
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
