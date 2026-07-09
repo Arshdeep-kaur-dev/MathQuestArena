@@ -67,58 +67,62 @@ def check_and_award_badges(user):
 # ============================================================
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def register(request):
+def google_login(request):
     try:
-        username = request.data.get('username')
-        email = request.data.get('email')
-        password = request.data.get('password')
+        access_token = request.data.get('credential')
 
-        if not username or not email or not password:
-            return Response({'error': 'All fields required!'}, status=400)
+        if not access_token:
+            return Response({'error': 'Token required!'}, status=400)
 
-        if User.objects.filter(username=username).exists():
-            return Response({'error': 'Username already exists!'}, status=400)
+        import requests as req
+        verify_url = 'https://www.googleapis.com/oauth2/v3/userinfo'
+        headers = {'Authorization': f'Bearer {access_token}'}
+        google_response = req.get(verify_url, headers=headers)
 
-        if User.objects.filter(email=email).exists():
-            return Response({'error': 'Email already registered!'}, status=400)
+        if google_response.status_code != 200:
+            return Response({'error': 'Invalid Google token!'}, status=400)
 
-        user = User.objects.create_user(
-            username=username,
+        google_data = google_response.json()
+
+        email = google_data.get('email')
+        name = google_data.get('name', '')
+
+        if not email:
+            return Response({'error': 'Email not found!'}, status=400)
+
+        base_username = email.split('@')[0]
+        username = base_username
+
+        counter = 1
+        while User.objects.filter(username=username).exclude(email=email).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+
+        user, created = User.objects.get_or_create(
             email=email,
-            password=password,
+            defaults={
+                'username': username,
+                'is_active': True,
+            }
         )
-        user.is_active = True
-        user.save()
 
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        token = account_activation_token.make_token(user)
-        activation_link = f"https://mathquest-arena.vercel.app/verify-email/{uid}/{token}"
+        if created:
+            user.set_unusable_password()
+            user.save()
 
-        try:
-            send_mail(
-                subject='Verify your MathQuest Arena Account',
-                message=f'''Hello {username}!
-
-Welcome to MathQuest Arena! 🎮
-
-Click here to verify your email:
-{activation_link}
-
-Team MathQuest Arena''',
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[email],
-                fail_silently=False,
-            )
-        except Exception as e:
-            print(f"Email send error: {str(e)}")
-
+        refresh = RefreshToken.for_user(user)
         return Response({
-            'message': 'Registration successful! Please check your email to verify your account.'
-        }, status=201)
+            'message': 'Login successful!',
+            'user': UserSerializer(user).data,
+            'tokens': {
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+            }
+        })
 
     except Exception as e:
-        print(f"Register error: {str(e)}")
-        return Response({'error': 'Registration failed!'}, status=500)
+        print(f"Google login error: {str(e)}")
+        return Response({'error': 'Google login failed!'}, status=500)
 
 
 
