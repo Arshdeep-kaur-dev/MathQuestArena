@@ -1,4 +1,4 @@
-import { GoogleLogin } from "@react-oauth/google";
+import { useGoogleLogin } from "@react-oauth/google";
 import { useState } from "react";
 import useWindowSize from "../hooks/useWindowSize";
 import { useNavigate, Link } from "react-router-dom";
