@@ -1,4 +1,8 @@
 import os
+import threading
+import requests as google_req
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -72,7 +76,7 @@ def google_login(request):
         if not access_token:
             return Response({'error': 'Token required!'}, status=400)
 
-        import requests as req
+        req = google_req.Request()
         verify_url = 'https://www.googleapis.com/oauth2/v3/userinfo'
         headers = {'Authorization': f'Bearer {access_token}'}
         google_response = req.get(verify_url, headers=headers)
