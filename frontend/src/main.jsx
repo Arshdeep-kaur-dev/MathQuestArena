@@ -13,3 +13,6 @@ createRoot(document.getElementById("root")).render(
     </GoogleOAuthProvider>
   </StrictMode>,
 );
+
+// 220550497171 - lbbpv50m44l8eejf86lm1ebt2u21gf8k.apps.googleusercontent.com;
+// client sectret ->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
