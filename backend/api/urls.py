@@ -5,6 +5,7 @@ urlpatterns = [
     # Auth
     path('register/', views.register, name='register'),
     path('login/',    views.login,    name='login'),
+    path('auth/google/', views.google_login, name='google_login'),
     path('logout/',   views.logout,   name='logout'),
     path('verify-email/<uidb64>/<token>/', views.verify_email),
 

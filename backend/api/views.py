@@ -1,3 +1,6 @@
+import os
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -475,3 +478,56 @@ def ai_tutor(request):
         import traceback
         print("FULL ERROR:", traceback.format_exc())
         return Response({'error': str(e), 'success': False}, status=500)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def google_login(request):
+    try:
+        token = request.data.get('credential')
+        if not token:
+            return Response({'error': 'Token required!'}, status=400)
+
+        # Google token verify karo
+        idinfo = id_token.verify_oauth2_token(
+            token,
+            google_requests.Request(),
+            os.getenv('GOOGLE_CLIENT_ID')
+        )
+
+        email = idinfo.get('email')
+        name = idinfo.get('name', '')
+        
+        # Username banao email se
+        username = email.split('@')[0]
+        if User.objects.filter(username=username).exclude(email=email).exists():
+            username = f"{username}{User.objects.count()}"
+        
+        # User dhundo ya banao
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                'username': username,
+                'is_active': True,
+            }
+        )
+        
+        if created:
+            user.set_unusable_password()
+            user.save()
+
+        # JWT token do
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'message': 'Login successful!',
+            'user': UserSerializer(user).data,
+            'tokens': {
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+            }
+        })
+
+    except ValueError as e:
+        return Response({'error': 'Invalid Google token!'}, status=400)
+    except Exception as e:
+        print(f"Google login error: {str(e)}")
+        return Response({'error': 'Google login failed!'}, status=500)
