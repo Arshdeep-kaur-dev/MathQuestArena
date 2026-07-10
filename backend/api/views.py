@@ -1,8 +1,6 @@
 import os
 import threading
 import requests as google_req
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -76,15 +74,17 @@ def google_login(request):
         if not access_token:
             return Response({'error': 'Token required!'}, status=400)
 
-        req = google_req.Request()
-        verify_url = 'https://www.googleapis.com/oauth2/v3/userinfo'
-        headers = {'Authorization': f'Bearer {access_token}'}
-        google_response = req.get(verify_url, headers=headers)
+        import urllib.request
+        import json
+        url = 'https://www.googleapis.com/oauth2/v3/userinfo'
+        req_obj = urllib.request.Request(url,headers={'Authorization': f'Bearer {access_token}'})
+        with urllib.request.urlopen(req_obj) as response:
+            google_data = json.loads(response.read().decode())
+        google_response_ok = True
 
-        if google_response.status_code != 200:
+        if not google_response_ok:
             return Response({'error': 'Invalid Google token!'}, status=400)
 
-        google_data = google_response.json()
 
         email = google_data.get('email')
         name = google_data.get('name', '')
@@ -485,55 +485,3 @@ def ai_tutor(request):
         print("FULL ERROR:", traceback.format_exc())
         return Response({'error': str(e), 'success': False}, status=500)
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def google_login(request):
-    try:
-        token = request.data.get('credential')
-        if not token:
-            return Response({'error': 'Token required!'}, status=400)
-
-        # Google token verify karo
-        idinfo = id_token.verify_oauth2_token(
-            token,
-            google_requests.Request(),
-            os.getenv('GOOGLE_CLIENT_ID')
-        )
-
-        email = idinfo.get('email')
-        name = idinfo.get('name', '')
-        
-        # Username banao email se
-        username = email.split('@')[0]
-        if User.objects.filter(username=username).exclude(email=email).exists():
-            username = f"{username}{User.objects.count()}"
-        
-        # User dhundo ya banao
-        user, created = User.objects.get_or_create(
-            email=email,
-            defaults={
-                'username': username,
-                'is_active': True,
-            }
-        )
-        
-        if created:
-            user.set_unusable_password()
-            user.save()
-
-        # JWT token do
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'message': 'Login successful!',
-            'user': UserSerializer(user).data,
-            'tokens': {
-                'access': str(refresh.access_token),
-                'refresh': str(refresh),
-            }
-        })
-
-    except ValueError as e:
-        return Response({'error': 'Invalid Google token!'}, status=400)
-    except Exception as e:
-        print(f"Google login error: {str(e)}")
-        return Response({'error': 'Google login failed!'}, status=500)
