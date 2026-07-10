@@ -97,8 +97,9 @@ def register(request):
         print(f"Register error: {str(e)}")
         return Response({'error': 'Registration failed!'}, status=500)
 
-
-# google login function=========================================
+# ==============================================================
+# google login function
+# ==============================================================
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def google_login(request):
