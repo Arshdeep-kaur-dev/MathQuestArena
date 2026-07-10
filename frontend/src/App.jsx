@@ -22,126 +22,125 @@ const ProtectedRoute = ({ children }) => {
   return user ? children : <Navigate to="/login" />;
 };
 
-function App() {
+const AppRoutes = () => {
   const { user } = useAuth();
   return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/learning"
+          element={
+            <ProtectedRoute>
+              <LearningHub />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/learning/:chapterId"
+          element={
+            <ProtectedRoute>
+              <ChapterDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/learning/:chapterId/video"
+          element={
+            <ProtectedRoute>
+              <VideoLesson />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/learning/:chapterId/reading"
+          element={
+            <ProtectedRoute>
+              <ReadingLesson />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quiz"
+          element={
+            <ProtectedRoute>
+              <QuizSelection />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quiz/:chapterId/:difficulty"
+          element={
+            <ProtectedRoute>
+              <QuizPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quiz/result"
+          element={
+            <ProtectedRoute>
+              <QuizResult />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leaderboard"
+          element={
+            <ProtectedRoute>
+              <Leaderboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notes"
+          element={
+            <ProtectedRoute>
+              <Notes />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ai-tutor"
+          element={
+            <ProtectedRoute>
+              <AITutor />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/verify-email/:uidb64/:token" element={<VerifyEmail />} />
+        <Route
+          path="/"
+          element={
+            user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
+function App() {
+  return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/learning"
-            element={
-              <ProtectedRoute>
-                <LearningHub />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/learning/:chapterId"
-            element={
-              <ProtectedRoute>
-                <ChapterDetail />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/learning/:chapterId/video"
-            element={
-              <ProtectedRoute>
-                <VideoLesson />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/learning/:chapterId/reading"
-            element={
-              <ProtectedRoute>
-                <ReadingLesson />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/quiz"
-            element={
-              <ProtectedRoute>
-                <QuizSelection />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/quiz/:chapterId/:difficulty"
-            element={
-              <ProtectedRoute>
-                <QuizPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/quiz/result"
-            element={
-              <ProtectedRoute>
-                <QuizResult />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/leaderboard"
-            element={
-              <ProtectedRoute>
-                <Leaderboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/notes"
-            element={
-              <ProtectedRoute>
-                <Notes />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/"
-            element={
-              user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />
-            }
-          />
-          <Route
-            path="/verify-email/:uidb64/:token"
-            element={<VerifyEmail />}
-          />
-
-          {/* <Route path="/ai-tutor" element={<PrivateRoute><AITutor /></PrivateRoute>} /> */}
-          <Route
-            path="/ai-tutor"
-            element={
-              <ProtectedRoute>
-                <AITutor />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
+      <AppRoutes />
     </AuthProvider>
   );
 }
