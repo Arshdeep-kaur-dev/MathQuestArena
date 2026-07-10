@@ -46,9 +46,7 @@ function Register() {
     setError("");
     try {
       await API.post("/register/", formData);
-      alert(
-        "Registration successful! Please check your email to verify your account.",
-      );
+      alert("Registration successful! You can now login.");
       navigate("/login");
     } catch (err) {
       const errors = err.response?.data;
