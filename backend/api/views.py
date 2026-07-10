@@ -66,6 +66,41 @@ def check_and_award_badges(user):
 # ============================================================
 @api_view(['POST'])
 @permission_classes([AllowAny])
+def register(request):
+    try:
+        username = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        if not username or not email or not password:
+            return Response({'error': 'All fields required!'}, status=400)
+
+        if User.objects.filter(username=username).exists():
+            return Response({'error': 'Username already exists!'}, status=400)
+
+        if User.objects.filter(email=email).exists():
+            return Response({'error': 'Email already registered!'}, status=400)
+
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+        )
+        user.is_active = True
+        user.save()
+
+        return Response({
+            'message': 'Registration successful!'
+        }, status=201)
+
+    except Exception as e:
+        print(f"Register error: {str(e)}")
+        return Response({'error': 'Registration failed!'}, status=500)
+
+
+# google login function=========================================
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def google_login(request):
     try:
         access_token = request.data.get('credential')
