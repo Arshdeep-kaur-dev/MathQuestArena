@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useWindowSize from "../hooks/useWindowSize";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -6,6 +6,16 @@ import API from "../api/axios";
 
 function Login() {
   const navigate = useNavigate();
+  const { login: authLogin, user } = useAuth();
+
+  // Already logged in? Dashboard pe bhejo!
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    const savedUser = localStorage.getItem("user");
+    if (token && savedUser) {
+      navigate("/dashboard");
+    }
+  }, []);
   const { login } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
