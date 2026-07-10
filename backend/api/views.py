@@ -1,6 +1,6 @@
 import os
-import threading
-import requests as google_req
+import urllib.request
+import json
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -14,7 +14,6 @@ from django.core.mail import send_mail
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from .tokens import account_activation_token
-
 from .models import (
     User, Chapter, Lesson, Question,
     QuizAttempt, Badge, UserBadge, StudentNote, ChapterVideo
@@ -70,31 +69,23 @@ def check_and_award_badges(user):
 def google_login(request):
     try:
         access_token = request.data.get('credential')
-
         if not access_token:
             return Response({'error': 'Token required!'}, status=400)
 
-        import urllib.request
-        import json
         url = 'https://www.googleapis.com/oauth2/v3/userinfo'
-        req_obj = urllib.request.Request(url,headers={'Authorization': f'Bearer {access_token}'})
+        req_obj = urllib.request.Request(
+            url,
+            headers={'Authorization': f'Bearer {access_token}'}
+        )
         with urllib.request.urlopen(req_obj) as response:
             google_data = json.loads(response.read().decode())
-        google_response_ok = True
-
-        if not google_response_ok:
-            return Response({'error': 'Invalid Google token!'}, status=400)
-
 
         email = google_data.get('email')
-        name = google_data.get('name', '')
-
         if not email:
             return Response({'error': 'Email not found!'}, status=400)
 
         base_username = email.split('@')[0]
         username = base_username
-
         counter = 1
         while User.objects.filter(username=username).exclude(email=email).exists():
             username = f"{base_username}{counter}"
@@ -107,7 +98,6 @@ def google_login(request):
                 'is_active': True,
             }
         )
-
         if created:
             user.set_unusable_password()
             user.save()
