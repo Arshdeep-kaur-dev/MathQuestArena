@@ -1,9 +1,9 @@
-import { useGoogleLogin } from "@react-oauth/google";
-import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
 import useWindowSize from "../hooks/useWindowSize";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../api/axios";
+import { useGoogleLogin } from "@react-oauth/google";
+import { useAuth } from "../context/AuthContext";
 
 function Register() {
   const navigate = useNavigate();
