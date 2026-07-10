@@ -33,41 +33,6 @@ function Login() {
     }
   };
 
-  const handleGoogleLogin = useGoogleLogin({
-    flow: "implicit",
-    onSuccess: async (tokenResponse) => {
-      try {
-        setLoading(true);
-        setError("");
-
-        // Google se user info lo
-        const userInfoRes = await fetch(
-          "https://www.googleapis.com/oauth2/v3/userinfo",
-          {
-            headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-          },
-        );
-        const userData = await userInfoRes.json();
-
-        // Backend ko bhejo
-        const res = await API.post("/auth/google/", {
-          credential: tokenResponse.access_token,
-          email: userData.email,
-          name: userData.name,
-        });
-
-        login(res.data.user, res.data.tokens.access, res.data.tokens.refresh);
-        navigate("/dashboard");
-      } catch (err) {
-        setError("Google login failed! Try again.");
-      } finally {
-        setLoading(false);
-      }
-    },
-    onError: () => {
-      setError("Google login failed!");
-    },
-  });
   return (
     <div style={styles.container}>
       {/* Background Wave Effect */}
